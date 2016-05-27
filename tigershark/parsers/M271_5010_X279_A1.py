@@ -426,6 +426,11 @@ Segment( u'III', Properties(syntax=u'P0102 L030405',position=u'2600',req_sit=u'S
   Element( u'III09', Properties(desc=u'Surface/Layer/Position Code', req_sit=u'N', data_type=(u'ID',u'2',u'2'), position=9,
     codes=[] ) ),
 ),
+Segment( u'LS', Properties(syntax='',position=u'3300',req_sit=u'S',repeat=u'1',desc=u'Loop Header'),
+  Element( u'LS01', Properties(desc=u'Loop Identifier Code', req_sit=u'R', data_type=(u'AN',u'1',u'4'), position=1,
+    codes=[u'2120'] ) ),
+),
+parsed_271_2120C,
 )
 parsed_271_2100C = Loop( u'2100C', Properties(position=u'0300',looptype='',repeat=u'1',req_sit=u'R',desc=u'Subscriber Name'), 
 Segment( u'NM1', Properties(syntax=u'P0809 C1110 C1203',position=u'0300',req_sit=u'R',repeat=u'1',desc=u'Subscriber Name'),
