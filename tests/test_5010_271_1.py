@@ -7,7 +7,7 @@ from tigershark.parsers.M271_5010_X279_A1 import parsed_271
 
 class TestParsed271(unittest.TestCase):
     def setUp(self):
-        with open('tests/5010-271-example-1.txt') as f:
+        with open('tests/samples/5010-271-1.txt') as f:
             parsed = parsed_271.unmarshall(f.read().strip())
         self.facade = f271.F271_5010(parsed).facades[0]
 
@@ -96,6 +96,85 @@ class TestParsed271(unittest.TestCase):
     def test_header(self):
         header = self.facade.header
         self.assertIsNone(header)
+
+    def test_coverage_information_list(self):
+        self.facade = None
+        with open('tests/samples/5010-271-3.txt') as f:
+            content = f.read().strip()
+        parsed = parsed_271.unmarshall(content)
+        facades = f271.F271_5010(parsed).facades
+        self.assertEqual(1, len(facades))
+        self.assertEqual(1, len(facades[0].subscribers))
+
+        eobi = facades[0].subscribers[0].eligibility_or_benefit_information
+        self.assertEqual(26, len(eobi))
+        self.assertEqual(('30', 'Health Benefit Plan Coverage'),
+                         eobi[0].coverage_information.service_type)
+        self.assertEqual('Open Record', eobi[0].coverage_information.description)
+        self.assertListEqual(['ABC+'], eobi[0].messages)
+
+        self.assertEqual(Decimal('0'), eobi[1].coverage_information.benefit_amount)
+        self.assertEqual(Decimal('0.3'), eobi[1].coverage_information.benefit_percent)
+        self.assertTupleEqual(('IND', 'Individual'), eobi[1].coverage_information.coverage_level)
+        self.assertTrue(eobi[1].coverage_information.in_plan_network)
+        self.assertEqual('2016-04-26', str(eobi[1].dates[0].time))
+        self.assertTupleEqual(('348', 'Benefit Begin'), eobi[1].dates[0].type)
+        self.assertListEqual(["THIS BENEFIT DOES APPLY TO MEMBER'S OUT-OF-POCKET PREMIUM"],
+                             eobi[1].messages)
+
+        self.assertEqual(Decimal('2500'), eobi[2].coverage_information.benefit_amount)
+        self.assertEqual(Decimal('0'), eobi[2].coverage_information.benefit_percent)
+        self.assertTupleEqual(('IND', 'Individual'), eobi[2].coverage_information.coverage_level)
+        self.assertFalse(eobi[2].coverage_information.both_in_out_network)
+        self.assertTrue(eobi[2].coverage_information.in_plan_network)
+        self.assertTupleEqual(('C', 'Deductible'), eobi[2].coverage_information.information_type)
+        self.assertTupleEqual(('23', 'Calendar Year'),
+                              eobi[2].coverage_information.time_period_type)
+        self.assertListEqual([], eobi[2].dates)
+        self.assertEqual(('30', 'Health Benefit Plan Coverage'),
+                         eobi[2].coverage_information.service_type)
+        self.assertListEqual([
+            "BENEFIT DOES APPLY TO MEMBER'S OUT-OF-POCKET PREMIUM",
+            'OUT OF NETWORK AMOUNTS APPLY TO IN-NETWORK',
+            'ACCUMULATORS ARE SHARED BETWEEN MEDICAL AND PHARMACY'
+        ], eobi[2].messages)
+
+        self.assertListEqual([], eobi[14].additional_information)
+        self.assertEqual(Decimal('0.4'), eobi[14].coverage_information.benefit_percent)
+        self.assertTupleEqual(('FAM', 'Family'), eobi[14].coverage_information.coverage_level)
+        self.assertTupleEqual(('A', 'Co-Insurance'),
+                              eobi[14].coverage_information.information_type)
+        self.assertEqual('2016-04-26', str(eobi[14].dates[0].time))
+        self.assertTupleEqual(('348', 'Benefit Begin'), eobi[14].dates[0].type)
+        self.assertEqual(('86', 'Emergency Services'),
+                         eobi[14].coverage_information.service_type)
+        self.assertListEqual([
+            'BEHAVIORAL',
+            "THIS BENEFIT DOES APPLY TO MEMBER'S OUT-OF-POCKET PREMIUM",
+            'MEDICAL'], eobi[14].messages)
+
+    def test_referral_request_for_review(self):
+        self.facade = None
+        with open('tests/samples/5010-271-4.txt') as f:
+            content = f.read().strip()
+        parsed = parsed_271.unmarshall(content)
+        facades = f271.F271_5010(parsed).facades
+        self.assertEqual(1, len(facades))
+        self.assertEqual(1, len(facades[0].subscribers))
+        # TODO:  write more asserts
+
+    def test_error_payer_not_supported(self):
+        """
+        Have
+        """
+        self.facade = None
+        with open('tests/samples/5010-271-5.txt') as f:
+            content = f.read().strip()
+        parsed = parsed_271.unmarshall(content)
+        facades = f271.F271_5010(parsed).facades
+        self.assertEqual(1, len(facades))
+        self.assertEqual(0, len(facades[0].subscribers))
+        # TODO: check and describe, write more asserts
 
 if __name__ == "__main__":
     unittest.main()
