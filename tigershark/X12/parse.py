@@ -737,12 +737,12 @@ class Loop( Parser ):
         # Confirm match between this loop and a segment of the structure
         i = 0
         while len(segments) > 0 and i < len(self.structure):
-            self.log.debug("Check {path}: {structure} {segments}".format(
+            self.log.debug("   Check {path}: {structure} {segments}".format(
                 path=self.path,
                 structure=self.structure[i].name,
                 segments=segments[0]))
             if self.structure[i].match(segments[0]):
-                self.log.debug("Consume {path}: {structure}".format(
+                self.log.debug("Consume  {path}: {structure}".format(
                     path=self.path,
                     structure=[s.name for s in self.structure]))
                 theLoop = self.theFactory.makeLoop(self.name)
