@@ -289,11 +289,48 @@ def get_facade(transaction_set_id, version_tuple):
     return getattr(module, facade_name)
 
 
+def get_representation(obj):
+    dict_repr = {}
+    skipped = []
+    for k, v in obj.__class__.__dict__.items():
+        if k in skipped:
+            continue
+        if isinstance(v, X12SegmentBridge) or isinstance(v, X12LoopBridge):
+            dict_repr[k] = v.get_representation()
+        elif isinstance(v, list):
+            dict_repr[k] = []
+            for el in v:
+                if isinstance(el, X12SegmentBridge) or isinstance(el, X12LoopBridge):
+                    dict_repr[k].append(el.get_representation())
+                else:
+                    dict_repr[k].append(str(el))
+        else:
+            dict_repr[k] = str(v)
+
+    for k, v in obj.__dict__.items():
+        if isinstance(v, X12SegmentBridge) or isinstance(v, X12LoopBridge):
+            dict_repr[k] = v.get_representation()
+        elif isinstance(v, list):
+            dict_repr[k] = []
+            for el in v:
+                if isinstance(el, X12SegmentBridge) or isinstance(el, X12LoopBridge):
+                    dict_repr[k].append(el.get_representation())
+                else:
+                    dict_repr[k].append(str(el))
+        else:
+            dict_repr[k] = str(v)
+
+    return dict_repr
+
+
 class Facade(object):
 
     def loops(self, theClass, anX12Message, *args, **kwargs):
         return [theClass(loop, *args, **kwargs) for loop in
                 anX12Message.descendant("loop", theClass.loopName)]
+
+    def get_representation(self):
+        return get_representation(self)
 
 
 class MissingSegment(Exception):
@@ -323,6 +360,9 @@ class X12LoopBridge(object):
 
     def __str__(self):
         return str(self.loop)
+
+    def get_representation(self):
+        return get_representation(self)
 
     def _filteredList(self, name, qualifierPos=None,
                       inList=None, notInList=None):
@@ -443,6 +483,9 @@ class X12SegmentBridge(object):
         if len(compList) > 0:
             return compList[0]
         return None
+
+    def get_representation(self):
+        return get_representation(self)
 
 
 class SegmentAccess(object):

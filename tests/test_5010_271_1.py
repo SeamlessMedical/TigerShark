@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 import unittest
 
@@ -173,6 +174,10 @@ class TestParsed271(unittest.TestCase):
         parsed = parsed_271.unmarshall(content)
         facades = f271.F271_5010(parsed).facades
         self.assertEqual(1, len(facades))
+
+        print json.dumps(facades[0].get_representation(), indent=4)
+
+
         self.assertEqual(0, len(facades[0].subscribers))
         # TODO: check and describe, write more asserts
 
