@@ -291,30 +291,53 @@ def get_facade(transaction_set_id, version_tuple):
 
 def get_representation(obj):
     dict_repr = {}
-    skipped = []
+    skipped = ['__doc__', '__get__', '__dict__', '__init__', 'segList', 'zz_code', 'ndc_code',
+               'icd_9_cm_code']
     for k, v in obj.__class__.__dict__.items():
         if k in skipped:
             continue
         if isinstance(v, X12SegmentBridge) or isinstance(v, X12LoopBridge):
+            v = getattr(obj, k)
             dict_repr[k] = v.get_representation()
+        # elif isinstance(v, SegmentSequenceAccess) or isinstance(v, SegmentAccess):
+        elif isinstance(v, SegmentAccess) or isinstance(v, CompositeAccess):
+            try:
+                v = getattr(obj, k)
+                dict_repr[k] = v.get_representation()
+            except AttributeError as e:
+                # still here is a lot of errors.
+                pass
         elif isinstance(v, list):
             dict_repr[k] = []
             for el in v:
                 if isinstance(el, X12SegmentBridge) or isinstance(el, X12LoopBridge):
                     dict_repr[k].append(el.get_representation())
+                elif isinstance(v, SegmentSequenceAccess) or isinstance(v, SegmentAccess):
+                    dict_repr[k] = v.get_representation()
                 else:
                     dict_repr[k].append(str(el))
         else:
+            if isinstance(v, ElementAccess) or isinstance(v, SegmentSequenceAccess):
+                v = getattr(obj, k)
             dict_repr[k] = str(v)
 
     for k, v in obj.__dict__.items():
+        if k in skipped:
+            continue
         if isinstance(v, X12SegmentBridge) or isinstance(v, X12LoopBridge):
+            v = getattr(obj, k)
+            dict_repr[k] = v.get_representation()
+        # elif isinstance(v, SegmentSequenceAccess) or isinstance(v, SegmentAccess):
+        elif isinstance(v, SegmentAccess) or isinstance(v, CompositeAccess):
+            v = getattr(obj, k)
             dict_repr[k] = v.get_representation()
         elif isinstance(v, list):
             dict_repr[k] = []
             for el in v:
                 if isinstance(el, X12SegmentBridge) or isinstance(el, X12LoopBridge):
                     dict_repr[k].append(el.get_representation())
+                elif isinstance(v, SegmentSequenceAccess) or isinstance(v, SegmentAccess):
+                    dict_repr[k] = v.get_representation()
                 else:
                     dict_repr[k].append(str(el))
         else:
@@ -539,6 +562,9 @@ class SegmentAccess(object):
     def __set__(self, instance, value):
         raise NotImplementedError("Can't set segment sequences, yet")
 
+    def get_representation(self):
+        return get_representation(self)
+
 
 class SegmentSequenceAccess(object):
     """Define access to sequence of Segments with a user-friendly attribute name.
@@ -612,6 +638,9 @@ class SegmentSequenceAccess(object):
 
     def __set__(self, instance, value):
         raise NotImplementedError("Can't set segment sequences, yet")
+
+    def get_representation(self):
+        return get_representation(self)
 
 
 class Position(object):
