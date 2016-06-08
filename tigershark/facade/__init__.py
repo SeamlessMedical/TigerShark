@@ -887,12 +887,13 @@ class ElementAccess(object):
                 segBridge = None
         if segBridge is None:
             raw = None
+            repetition = None
         else:
             raw = self.position.get(segBridge.segment)
+            repetition = segBridge.segment.message.getRepetitionSeparator()
         if self.x12type is not None:
             # repetition separator: } or >
-            repetition = segBridge.segment.message.getRepetitionSeparator()
-            if repetition in raw:
+            if repetition and repetition in raw:
                 return [self.x12type.x12_to_python(el) for el in raw.split(repetition)]
             return self.x12type.x12_to_python(raw)
         else:
