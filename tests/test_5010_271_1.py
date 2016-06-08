@@ -26,6 +26,25 @@ class TestParsed271(unittest.TestCase):
         self.assertEqual(eobi[1].coverage_information.information_type,
                          ('W', 'Other Source of Data'))
 
+    def test_repetition_separator(self):
+        eobi = self.facade.subscribers[0].eligibility_or_benefit_information
+        information = eobi[8]  # multiple types
+        information_types = information.coverage_information.service_type
+        expected_types = [
+            ('1', 'Medical Care'),
+            ('33', 'Chiropractic'),
+            ('47', 'Hospitalization'),
+            ('48', 'Hospital - Inpatient'),
+            ('50', 'Hospital - Outpatient'),
+            ('86', 'Emergency Services'),
+            ('98', 'Professional (Physician) Visit - Office'),
+            ('UC', 'Urgent Care'),
+            ('AL', 'Optometry'),
+            ('MH', 'Mental Health'),
+            ('88', 'Pharmacy'),
+            ]
+        self.assertListEqual(information_types, expected_types)
+
     def test_subscriber_information(self):
         subscriber = self.facade.subscribers[0]
         location = subscriber.personal_information.address_location
@@ -175,7 +194,7 @@ class TestParsed271(unittest.TestCase):
         facades = f271.F271_5010(parsed).facades
         self.assertEqual(1, len(facades))
 
-        print json.dumps(facades[0].get_representation(), indent=4)
+#        print json.dumps(facades[0].get_representation(), indent=4)
 
 
         self.assertEqual(0, len(facades[0].subscribers))
