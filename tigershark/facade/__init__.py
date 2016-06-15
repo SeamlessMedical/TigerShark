@@ -289,13 +289,21 @@ def get_facade(transaction_set_id, version_tuple):
     return getattr(module, facade_name)
 
 
+def get_list_representation(src_list):
+    list_repr = []
+    for el in src_list:
+        if isinstance(el, X12SegmentBridge) or isinstance(el, X12LoopBridge):
+            list_repr.append(el.get_representation())
+        elif isinstance(el, SegmentSequenceAccess) or isinstance(el, SegmentAccess):
+            list_repr.append(el.get_representation())
+        else:
+            list_repr.append(str(el))
+    return list_repr
+
+
 def get_representation(obj):
     dict_repr = {}
-    skipped = ['__doc__', '__get__', '__dict__', '__init__', 'segList', 'zz_code', 'ndc_code',
-               'icd_9_cm_code']
     for k, v in obj.__class__.__dict__.items():
-        if k in skipped:
-            continue
         if isinstance(v, X12SegmentBridge) or isinstance(v, X12LoopBridge):
             v = getattr(obj, k)
             dict_repr[k] = v.get_representation()
@@ -308,22 +316,16 @@ def get_representation(obj):
                 # still here is a lot of errors.
                 pass
         elif isinstance(v, list):
-            dict_repr[k] = []
-            for el in v:
-                if isinstance(el, X12SegmentBridge) or isinstance(el, X12LoopBridge):
-                    dict_repr[k].append(el.get_representation())
-                elif isinstance(v, SegmentSequenceAccess) or isinstance(v, SegmentAccess):
-                    dict_repr[k] = v.get_representation()
-                else:
-                    dict_repr[k].append(str(el))
+            dict_repr[k] = get_list_representation(v)
         else:
             if isinstance(v, ElementAccess) or isinstance(v, SegmentSequenceAccess):
                 v = getattr(obj, k)
-            dict_repr[k] = str(v)
+                if isinstance(v, list):
+                    dict_repr[k] = get_list_representation(v)
+                else:
+                    dict_repr[k] = str(v)
 
     for k, v in obj.__dict__.items():
-        if k in skipped:
-            continue
         if isinstance(v, X12SegmentBridge) or isinstance(v, X12LoopBridge):
             v = getattr(obj, k)
             dict_repr[k] = v.get_representation()
@@ -332,16 +334,10 @@ def get_representation(obj):
             v = getattr(obj, k)
             dict_repr[k] = v.get_representation()
         elif isinstance(v, list):
-            dict_repr[k] = []
-            for el in v:
-                if isinstance(el, X12SegmentBridge) or isinstance(el, X12LoopBridge):
-                    dict_repr[k].append(el.get_representation())
-                elif isinstance(v, SegmentSequenceAccess) or isinstance(v, SegmentAccess):
-                    dict_repr[k] = v.get_representation()
-                else:
-                    dict_repr[k].append(str(el))
+            dict_repr[k] = get_list_representation(v)
         else:
-            dict_repr[k] = str(v)
+            pass
+            # dict_repr[k] = str(v)
 
     return dict_repr
 

@@ -175,8 +175,9 @@ class TestParsed271(unittest.TestCase):
         facades = f271.F271_5010(parsed).facades
         self.assertEqual(1, len(facades))
 
-        print json.dumps(facades[0].get_representation(), indent=4)
-
+        dict1 = facades[0].get_representation()
+        json_data = json.dumps(dict1, indent=4)
+        # print json_data
 
         self.assertEqual(0, len(facades[0].subscribers))
         # TODO: check and describe, write more asserts
