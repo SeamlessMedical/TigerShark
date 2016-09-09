@@ -366,5 +366,11 @@ class X12Message( X12Loop ):
         """
         isaLoop= self.descendant( "segment", "ISA" )[0]
         return isaLoop.getByPos(16)
+    def getRepetitionSeparator(self):
+        """Returns the repetition separator in :samp:`ISA11`.
+        :returns: string value of the repetition separator, often a :samp:`}`.
+        """
+        isaLoop = self.descendant("segment", "ISA")[0]
+        return isaLoop.getByPos(11)
 
 _test2type = { "loop" : X12Loop, "segment" : X12Segment, "message" : X12Message }
